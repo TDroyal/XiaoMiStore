@@ -93,7 +93,7 @@ func GenerateCaptcha() (id, b64s, answer string, err error) {
 }
 
 // 验证验证码
-func VerifyCaptcha(id, verify_string string) bool { //answer是客户端传过来的字符串
+func VerifyCaptcha(id, verify_string string) bool { //verify_string是客户端传过来的字符串
 	verify_pass := store.Verify(id, verify_string, true) //是否验证通过
 	return verify_pass
 }

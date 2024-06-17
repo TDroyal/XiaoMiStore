@@ -1,6 +1,8 @@
 package dao
 
 import (
+	"XiaoMiStore/models"
+
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -27,4 +29,12 @@ func CloseMySQL() {
 		panic(err)
 	}
 	sqlDB.Close()
+}
+
+// 迁移模型  AutoMigrate 用于自动迁移您的 schema，保持您的 schema 是最新的。
+func InitModels() error {
+	if err := DB.AutoMigrate(&models.Admin{}); err != nil {
+		return err
+	}
+	return nil
 }

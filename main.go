@@ -11,7 +11,13 @@ func main() {
 		panic(err)
 	}
 
+	//main结束时关闭连接数据库
 	defer dao.CloseMySQL()
+
+	// 模型绑定
+	if err := dao.InitModels(); err != nil {
+		panic(err)
+	}
 
 	// 连接Redis数据库
 	if err := dao.InitRedis(); err != nil {

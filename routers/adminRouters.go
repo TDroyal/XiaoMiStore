@@ -10,8 +10,10 @@ func SetupAdminRouters(r *gin.Engine) {
 	adminRouters := r.Group("/admin")
 	{
 		//登录
+		adminRouters.GET("/generateAdmin", admin.LoginController{}.Index)
 		adminRouters.GET("/generateCaptcha", admin.LoginController{}.GenerateACaptcha) //生成图形验证码
 		adminRouters.POST("/login", admin.LoginController{}.Login)                     //后台管理员登录路由
+		adminRouters.GET("/logout", admin.LoginController{}.Logout)                    //后台管理员退出登录路由
 
 		//管理员管理
 		adminRouters.POST("manager/add", admin.ManagerController{}.Add)       //管理员添加
