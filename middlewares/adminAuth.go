@@ -31,6 +31,7 @@ func InitAdminAuthMiddleware(c *gin.Context) {
 			// 同时，点击登录时，会调用后端的路由/admin/doLogin提交用户信息
 			if urlPath != "/admin/login" && urlPath != "/admin/doLogin" && urlPath != "/admin/generateCaptcha" {
 				c.Redirect(302, "/admin/login")
+				c.Abort() //不调用后续的handler处理函数
 			}
 		}
 
@@ -38,6 +39,7 @@ func InitAdminAuthMiddleware(c *gin.Context) {
 		// 4、如果session不存在，判断当前访问的URL是否是login logout captcha，
 		if urlPath != "/admin/login" && urlPath != "/admin/doLogin" && urlPath != "/admin/generateCaptcha" {
 			c.Redirect(302, "/admin/login")
+			c.Abort()
 		}
 	}
 

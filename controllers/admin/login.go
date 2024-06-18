@@ -5,6 +5,7 @@ import (
 	"XiaoMiStore/logic"
 	"XiaoMiStore/models"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-contrib/sessions"
@@ -32,6 +33,7 @@ func (con LoginController) Index(c *gin.Context) {
 	// 	"status":  0,
 	// 	"data":    nil,
 	// })
+	fmt.Println("看看能不能访问此页面") //有c.Abort()就可以拦截未登录用户或非法用户调用此handler函数
 	c.String(http.StatusOK, "欢迎来到后台管理首页")
 }
 
@@ -102,6 +104,7 @@ func (con LoginController) Login(c *gin.Context) {
 }
 
 func (con LoginController) Logout(c *gin.Context) {
+	fmt.Println("看看能不能调用此handler Logout") //有c.Abort()就可以拦截未登录用户调用此handler函数
 	// 1.销毁session
 	session := sessions.Default(c)
 	// 它只会从当前请求的会话中删除"userinfo"键，而不会从Redis中删除对应的会话数据。(后续思考怎么解决)
