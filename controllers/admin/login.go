@@ -16,22 +16,23 @@ type LoginController struct {
 }
 
 func (con LoginController) Index(c *gin.Context) {
-	var admin = &models.Admin{
-		Username: "royal",
-		Password: logic.GetMD5("123456"),
-		Mobile:   "18275385029",
-		Email:    "123456@qq.com",
-		Status:   1,
-		RoleID:   2,
-		IsSuper:  0,
-	}
-	dao.DB.Create(admin)
+	// var admin = &models.Admin{
+	// 	Username: "royal",
+	// 	Password: logic.GetMD5("123456"),
+	// 	Mobile:   "18275385029",
+	// 	Email:    "123456@qq.com",
+	// 	Status:   1,
+	// 	RoleID:   2,
+	// 	IsSuper:  0,
+	// }
+	// dao.DB.Create(admin)
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "ok",
-		"status":  0,
-		"data":    nil,
-	})
+	// c.JSON(http.StatusOK, gin.H{
+	// 	"message": "ok",
+	// 	"status":  0,
+	// 	"data":    nil,
+	// })
+	c.String(http.StatusOK, "欢迎来到后台管理首页")
 }
 
 func (con LoginController) GenerateACaptcha(c *gin.Context) {
