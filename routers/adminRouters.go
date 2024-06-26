@@ -28,11 +28,22 @@ func SetupAdminRouters(r *gin.Engine) {
 		adminRouters.POST("role/edit", admin.RoleController{}.Edit)              //编辑角色
 		adminRouters.POST("role/delete", admin.RoleController{}.Delete)          //删除角色
 
+		adminRouters.GET("role/getAuthInfo", admin.RoleController{}.GetAuthInfo) //获取角色已授权信息
+		adminRouters.POST("role/auth", admin.RoleController{}.Auth)              //角色授权(利用复选框修改角色的权限：包括添加，修改，删除)
+
 		//管理员管理
 		adminRouters.GET("manager/getManagerList", admin.ManagerController{}.GetManagerList) //获取管理员列表
 		adminRouters.GET("manager/getManagerInfo", admin.ManagerController{}.GetManagerInfo) //获取角色信息
 		adminRouters.POST("manager/add", admin.ManagerController{}.Add)                      //管理员添加
 		adminRouters.POST("manager/edit", admin.ManagerController{}.Edit)                    //管理员编辑
 		adminRouters.POST("manager/delete", admin.ManagerController{}.Delete)                //管理员删除
+
+		//权限管理
+		adminRouters.GET("access/getTopModule", admin.AccessController{}.GetTopModule)   //获取一级模块列表(做下拉框)
+		adminRouters.GET("access/getAccessList", admin.AccessController{}.GetAccessList) //获取权限列表
+		adminRouters.GET("access/getAccessInfo", admin.AccessController{}.GetAccessInfo) //获取权限列表
+		adminRouters.POST("access/add", admin.AccessController{}.Add)                    //权限添加
+		adminRouters.POST("access/edit", admin.AccessController{}.Edit)                  //权限编辑
+		adminRouters.POST("access/delete", admin.AccessController{}.Delete)              //权限删除
 	}
 }

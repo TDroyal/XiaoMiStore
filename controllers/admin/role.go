@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type RoleController struct { //角色管理
@@ -100,4 +101,49 @@ func (con RoleController) Delete(c *gin.Context) {
 		return
 	}
 	con.Success(c, "删除角色成功", 0, nil)
+}
+
+func (con RoleController) GetAuthInfo(c *gin.Context) {
+	role_id := c.Query("id") //获取角色id
+	//根据角色id获取当前角色已有的授权信息，并对复选框进行自行选中
+	authInfo := []models.RoleAccess{}
+	if err := dao.DB.Where("role_id = ?", role_id).Find(&authInfo).Error; err != nil {
+		con.Error(c, "获取授权信息失败", -1, nil)
+		return
+	}
+	con.Success(c, "获取授权信息成功", 0, authInfo)
+}
+
+func (con RoleController) Auth(c *gin.Context) {
+	//获取前端传过来的角色id，以及需要对齐进行授权的所有授权id
+	//假设前端以form表单传过来，授权id是checkbox形式
+	role_id := logic.StringToInt(c.PostForm("role_id")) //角色id
+	accessIDList := c.PostFormArray("access_node[]")    //[1 2 3 5]
+
+	//下面两步必须用事务一起做
+	if err := dao.DB.Transaction(func(tx *gorm.DB) error { //自动事务
+		// 在事务中执行一些 DB 操作（从这里开始，您应该使用 'tx' 而不是 'DB'）
+		//1. 把与role_id相关的旧的授权数据全部清空
+		if err := dao.DB.Where("role_id = ?", role_id).Delete(&models.RoleAccess{}).Error; err != nil {
+			con.Error(c, "授权失败", -1, nil)
+			return err
+		}
+		//2. 再增加新的授权数据，
+		roleAccessAdd := models.RoleAccess{}
+		for _, v := range accessIDList {
+			roleAccessAdd.RoleID = role_id
+			roleAccessAdd.AccessID = logic.StringToInt(v)
+			if err := dao.DB.Create(&roleAccessAdd).Error; err != nil {
+				con.Error(c, "授权失败", -1, nil)
+				return err
+			}
+		}
+
+		// 返回 nil 提交事务
+		return nil
+	}); err != nil {
+		con.Error(c, "授权失败", -1, nil)
+		return
+	}
+	con.Success(c, "授权成功", 0, nil)
 }

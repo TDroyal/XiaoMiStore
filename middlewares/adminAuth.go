@@ -30,9 +30,18 @@ func InitAdminAuthMiddleware(c *gin.Context) {
 			// 访问前端/admin/login页面时，会会从后端路由/admin/generateCaptcha获取验证码
 			// 同时，点击登录时，会调用后端的路由/admin/doLogin提交用户信息
 			if urlPath != "/admin/login" && urlPath != "/admin/doLogin" && urlPath != "/admin/generateCaptcha" {
-				c.Redirect(302, "/admin/login")
-				c.Abort() //不调用后续的handler处理函数
+				c.Redirect(302, "/admin/login") //重定向的是后端的ip，这种不是前后端分离，前后端分离项目，应该往前端返回一个信息告诉前端重定向到登录页面的路由
+				c.Abort()                       //不调用后续的handler处理函数
 			}
+		} else { //前后端分离的项目，应该由前端判断权限问题。
+
+			//管理员登录成功，做权限判断，没有对应权限的管理员访问相应的页面（url）时应该被拒绝
+			//1、获取当前管理员对应角色的权限
+
+			//2、再拿到管理员当前访问的地址
+
+			//3、再看该url对应的权限id是否在当前管理员的权限里面
+			c.Next()
 		}
 
 	} else { //表示用户没有登录，跳转到前端的登录页面
