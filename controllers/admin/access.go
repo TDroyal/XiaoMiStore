@@ -6,6 +6,7 @@ import (
 	"XiaoMiStore/models"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type AccessController struct { //权限管理
@@ -17,7 +18,9 @@ type AccessController struct { //权限管理
 func (con AccessController) GetAccessList(c *gin.Context) {
 	//获取顶级模块(一级导航栏，同时加载出来它对应的二级导航type=2栏以及操作权限type=3)
 	topModuleList := []models.Access{}
-	if err := dao.DB.Where("module_id = ?", 0).Preload("AccessList").Find(&topModuleList).Error; err != nil {
+	if err := dao.DB.Where("module_id = ?", 0).Preload("AccessList", func(db *gorm.DB) *gorm.DB {
+		return db.Order("access.sort DESC")
+	}).Order("sort desc").Find(&topModuleList).Error; err != nil {
 		con.Error(c, "获取模块信息失败", -1, nil)
 		return
 	}

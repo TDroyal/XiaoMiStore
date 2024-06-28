@@ -10,6 +10,10 @@ import (
 func SetupAdminRouters(r *gin.Engine) {
 	adminRouters := r.Group("/admin", middlewares.InitAdminAuthMiddleware)
 	{
+		// 公共修改所有表中status或者数字(sort等)字段
+		adminRouters.POST("/changeStatus", admin.MainController{}.ChangeStatus) //修改status
+		adminRouters.POST("/changeNum", admin.MainController{}.ChangeNum)       //修改数字字段
+
 		//管理员登录
 		adminRouters.GET("/index", admin.LoginController{}.Index)                      //模拟后台管理首页
 		adminRouters.GET("/generateCaptcha", admin.LoginController{}.GenerateACaptcha) //生成图形验证码
@@ -17,9 +21,11 @@ func SetupAdminRouters(r *gin.Engine) {
 		adminRouters.GET("/doLogout", admin.LoginController{}.Logout)                  //后台管理员退出登录路由
 
 		//轮播图管理
-		adminRouters.POST("focus/add", admin.FocusController{}.Add)       //添加轮播图
-		adminRouters.POST("focus/edit", admin.FocusController{}.Edit)     //编辑轮播图
-		adminRouters.POST("focus/delete", admin.FocusController{}.Delete) //删除轮播图
+		adminRouters.GET("focus/getFocusList", admin.FocusController{}.GetFocusList) //获取轮播图列表信息
+		adminRouters.GET("focus/getFocusInfo", admin.FocusController{}.GetFocusInfo) //获取轮播图信息
+		adminRouters.POST("focus/add", admin.FocusController{}.Add)                  //添加轮播图
+		adminRouters.POST("focus/edit", admin.FocusController{}.Edit)                //编辑轮播图
+		adminRouters.POST("focus/delete", admin.FocusController{}.Delete)            //删除轮播图
 
 		//角色管理
 		adminRouters.GET("role/getRoleList", admin.RoleController{}.GetRoleList) //获取角色列表信息

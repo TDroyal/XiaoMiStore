@@ -12,7 +12,7 @@ type Access struct {
 	ActionName  string //操作名称  （管理员列表，增加管理员）
 	Url         string //操作对应的地址
 	ModuleID    int    `gorm:"index"` // 自身是个1对多的关系  0表示它是一个一级菜单， 如果它和此表中的ID相等，就表示这个ID下对应二级菜单
-	Sort        int
+	Sort        int    //排序都是值越大的在越前面
 	Description string
 	Status      int
 	//  自身是个1对多的关系 左侧导航栏对应的二级导航栏

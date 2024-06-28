@@ -18,6 +18,9 @@ import (
 func SetupRouter() *gin.Engine { //父路由
 	r := gin.Default()
 
+	// 设置静态文件服务   后续存储文件的目录就可以直接以static/开头
+	r.Static("/static", "./static") // 项目中./是相对于根目录而言的，而不是当前目录
+
 	//配置redis存储的session中间件  基于 Redis 存储 Session
 	// https://github.com/gin-contrib/sessions
 	store, err := redis.NewStore(10, "tcp", "localhost:6379", "123456", []byte("secret_royal_111"))
