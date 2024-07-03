@@ -47,9 +47,24 @@ func SetupAdminRouters(r *gin.Engine) {
 		//权限管理
 		adminRouters.GET("access/getTopModule", admin.AccessController{}.GetTopModule)   //获取一级模块列表(做下拉框)
 		adminRouters.GET("access/getAccessList", admin.AccessController{}.GetAccessList) //获取权限列表
-		adminRouters.GET("access/getAccessInfo", admin.AccessController{}.GetAccessInfo) //获取权限列表
+		adminRouters.GET("access/getAccessInfo", admin.AccessController{}.GetAccessInfo) //获取权限信息
 		adminRouters.POST("access/add", admin.AccessController{}.Add)                    //权限添加
 		adminRouters.POST("access/edit", admin.AccessController{}.Edit)                  //权限编辑
 		adminRouters.POST("access/delete", admin.AccessController{}.Delete)              //权限删除
+
+		//商品分类管理
+		adminRouters.GET("goodsCate/getGoodsCateList", admin.GoodsCateController{}.GetGoodsCateList) //获取商品分类列表
+		adminRouters.GET("goodsCate/getTopCate", admin.GoodsCateController{}.GetTopCate)             //获取一级商品分类列表(做下拉框)
+		adminRouters.GET("goodsCate/getGoodsCateInfo", admin.GoodsCateController{}.GetGoodsCateInfo) //获取权限信息
+		adminRouters.POST("goodsCate/add", admin.GoodsCateController{}.Add)                          //商品分类的添加
+		adminRouters.POST("goodsCate/edit", admin.GoodsCateController{}.Edit)                        //商品分类的编辑
+		adminRouters.POST("goodsCate/delete", admin.GoodsCateController{}.Delete)                    //商品分类的删除
+
+		//商品类型管理
+		adminRouters.GET("goodsType/getGoodsTypeList", admin.GoodsTypeController{}.GetGoodsTypeList) //获取商品类型列表信息
+		adminRouters.GET("goodsType/getGoodsTypeInfo", admin.GoodsTypeController{}.GetGoodsTypeInfo) //获取商品类型信息
+		adminRouters.POST("goodsType/add", admin.GoodsTypeController{}.Add)                          //添加商品类型
+		adminRouters.POST("goodsType/edit", admin.GoodsTypeController{}.Edit)                        //编辑商品类型
+		adminRouters.POST("goodsType/delete", admin.GoodsTypeController{}.Delete)                    //删除商品类型
 	}
 }
