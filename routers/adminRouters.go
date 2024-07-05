@@ -66,5 +66,13 @@ func SetupAdminRouters(r *gin.Engine) {
 		adminRouters.POST("goodsType/add", admin.GoodsTypeController{}.Add)                          //添加商品类型
 		adminRouters.POST("goodsType/edit", admin.GoodsTypeController{}.Edit)                        //编辑商品类型
 		adminRouters.POST("goodsType/delete", admin.GoodsTypeController{}.Delete)                    //删除商品类型
+
+		// 商品类型属性管理
+		adminRouters.GET("goodsTypeAttribute/getGoodsTypeAttributeList", admin.GoodsTypeAttributeController{}.GetGoodsTypeAttributeList) //获取商品类型属性列表信息
+		adminRouters.GET("goodsTypeAttribute/getGoodsTypeAttributeInfo", admin.GoodsTypeAttributeController{}.GetGoodsTypeAttributeInfo) //获取商品类型属性信息
+		adminRouters.POST("goodsTypeAttribute/add", admin.GoodsTypeAttributeController{}.Add)                                            //添加商品类型属性
+		adminRouters.POST("goodsTypeAttribute/edit", admin.GoodsTypeAttributeController{}.Edit)                                          //编辑商品类型属性
+		adminRouters.POST("goodsTypeAttribute/delete", admin.GoodsTypeAttributeController{}.Delete)                                      //删除商品类型属性
+
 	}
 }
