@@ -74,5 +74,13 @@ func SetupAdminRouters(r *gin.Engine) {
 		adminRouters.POST("goodsTypeAttribute/edit", admin.GoodsTypeAttributeController{}.Edit)                                          //编辑商品类型属性
 		adminRouters.POST("goodsTypeAttribute/delete", admin.GoodsTypeAttributeController{}.Delete)                                      //删除商品类型属性
 
+		// 商品颜色管理  (增删改查需要什么再补什么)
+		adminRouters.GET("goodsColor/getGoodsColorList", admin.GoodsColorController{}.GetGoodsColorList) // 获取所有的颜色列表
+
+		//商品管理
+		adminRouters.POST("goods/imageUpload", admin.GoodsController{}.ImageUpload)          //froala富文本编辑器上传图片
+		adminRouters.GET("goods/getGoodsList", admin.GoodsController{}.GetGoodsList)         //获取商品列表信息
+		adminRouters.GET("goods/getGoodsInfo", admin.GoodsCateController{}.GetGoodsCateInfo) //获取商品的所有信息
+		adminRouters.POST("goods/add", admin.GoodsController{}.Add)                          //添加商品(goroutine有无问题？？？)
 	}
 }

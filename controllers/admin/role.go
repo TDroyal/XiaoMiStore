@@ -124,7 +124,7 @@ func (con RoleController) Auth(c *gin.Context) {
 	if err := dao.DB.Transaction(func(tx *gorm.DB) error { //自动事务
 		// 在事务中执行一些 DB 操作（从这里开始，您应该使用 'tx' 而不是 'DB'）
 		//1. 把与role_id相关的旧的授权数据全部清空
-		if err := dao.DB.Where("role_id = ?", role_id).Delete(&models.RoleAccess{}).Error; err != nil {
+		if err := tx.Where("role_id = ?", role_id).Delete(&models.RoleAccess{}).Error; err != nil {
 			con.Error(c, "授权失败", -1, nil)
 			return err
 		}
@@ -133,7 +133,7 @@ func (con RoleController) Auth(c *gin.Context) {
 		for _, v := range accessIDList {
 			roleAccessAdd.RoleID = role_id
 			roleAccessAdd.AccessID = logic.StringToInt(v)
-			if err := dao.DB.Create(&roleAccessAdd).Error; err != nil {
+			if err := tx.Create(&roleAccessAdd).Error; err != nil {
 				con.Error(c, "授权失败", -1, nil)
 				return err
 			}

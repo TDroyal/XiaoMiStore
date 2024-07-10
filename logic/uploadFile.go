@@ -43,7 +43,7 @@ func UploadImageFile(c *gin.Context, uploadfileName string) (string, error) { //
 	//4.对图片进行压缩（选做）
 
 	//5.生成文件名称和文件保存的目录      xxx.jpeg
-	fileName := GetUnixTimestamp() + extName // time.Now().Unix() 将时间转换为 UNIX 时间戳
+	fileName := GetUnixNanoTimestamp() + extName // time.Now().Unix() 将时间转换为 UNIX 时间戳（纳秒级别）
 	//6.执行保存
 	dst := fmt.Sprintf("%s/%s", dir, fileName)
 	c.SaveUploadedFile(file, dst)
