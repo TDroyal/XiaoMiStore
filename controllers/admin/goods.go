@@ -4,6 +4,7 @@ import (
 	"XiaoMiStore/dao"
 	"XiaoMiStore/logic"
 	"XiaoMiStore/models"
+	"math"
 	"net/http"
 	"strings"
 	"sync"
@@ -18,14 +19,35 @@ type GoodsController struct {
 	BaseController
 }
 
-// 获取商品列表信息
+// 获取商品列表信息  (分页)
+// 前端   xxx/goodslist/?page=1 或者xxx/goodslist/  都是返回第一页的信息
 func (con GoodsController) GetGoodsList(c *gin.Context) {
+
+	page := logic.StringToInt(c.DefaultQuery("page", "1"))
+	if page == 0 {
+		page = 1
+	}
+	pageSize := 5
+
 	goodsList := []models.Goods{}
-	if err := dao.DB.Find(&goodsList).Error; err != nil {
-		con.Success(c, "获取商品列表信息失败", -1, goodsList)
+	if err := dao.DB.Offset((page - 1) * pageSize).Limit(pageSize).Find(&goodsList).Error; err != nil {
+		con.Success(c, "获取商品列表信息失败", -1, nil)
 		return
 	}
-	con.Success(c, "获取商品列表信息成功", 0, goodsList)
+
+	// 获取商品总数量
+	var totalCount int64
+	if err := dao.DB.Model(&models.Goods{}).Count(&totalCount).Error; err != nil {
+		con.Success(c, "获取商品列表信息失败", -1, nil)
+		return
+	}
+
+	con.Success(c, "获取商品列表信息成功", 0, gin.H{
+		"goodsList":  goodsList,
+		"totalCount": totalCount,
+		"page":       page,
+		"totalPage":  math.Ceil(float64(totalCount) / float64(pageSize)),
+	})
 }
 
 func (con GoodsCateController) GetGoodsInfo(c *gin.Context) {
@@ -290,4 +312,194 @@ func (con GoodsController) Add(c *gin.Context) {
 	}
 
 	con.Success(c, "添加商品成功", 0, nil)
+}
+
+func (con GoodsController) Edit(c *gin.Context) {
+
+	// 1.获取表单提交过来的数据  可以改成shouldbind
+	id := logic.StringToInt(c.PostForm("id"))
+	title := c.PostForm("title")
+	subTitle := c.PostForm("sub_title")
+	goodsSn := c.PostForm("goods_sn")
+	cateID := logic.StringToInt(c.PostForm("cate_id"))
+	goodsNumber := logic.StringToInt(c.PostForm("goods_number"))
+	//注意小数点
+	marketPrice := logic.StringToFloat(c.PostForm("market_price"))
+	price := logic.StringToFloat(c.PostForm("price"))
+
+	relationGoods := c.PostForm("relation_goods")
+	goodsAttr := c.PostForm("goods_attr") //更多属性，额外的属性
+	goodsVersion := c.PostForm("goods_version")
+	goodsGift := c.PostForm("goods_gift")
+	goodsFitting := c.PostForm("goods_fitting")
+	//获取的是切片
+	goodsColorArr := c.PostFormArray("goods_color") //checkbox的名称都是goods_color
+
+	goodsKeywords := c.PostForm("goods_keywords")
+	goodsDesc := c.PostForm("goods_desc")
+	goodsContent := c.PostForm("goods_content")
+	isHot := logic.StringToInt(c.PostForm("is_hot"))
+	isBest := logic.StringToInt(c.PostForm("is_best"))
+	isNew := logic.StringToInt(c.PostForm("is_new"))
+	goodsTypeID := logic.StringToInt(c.PostForm("goods_type_id"))
+	sort := logic.StringToInt(c.PostForm("sort"))
+	status := logic.StringToInt(c.PostForm("status"))
+
+	// 2.获取颜色信息 把颜色转化为字符串   //存到goods表的goods_color string中
+	goodsColorStr := strings.Join(goodsColorArr, ",")
+
+	// 3.上传图片 生成缩略图   商品的主图片 goods表中的GoodsImg
+	goodsImg, upload_err := logic.UploadImageFile(c, "goods_img")
+	if upload_err != nil {
+		con.Error(c, "添加商品失败", -1, nil)
+		return
+	}
+
+	// 下面3步要么都成功，要么都不成功，事务维护数据库的一致性
+
+	// 4.修改商品数据
+	goods := models.Goods{
+		ID:            id,
+		Title:         title,
+		SubTitle:      subTitle,
+		GoodsSn:       goodsSn,
+		CateID:        cateID,
+		GoodsNumber:   goodsNumber,
+		MarketPrice:   marketPrice,
+		Price:         price,
+		RelationGoods: relationGoods,
+		GoodsAttr:     goodsAttr,
+		GoodsVersion:  goodsVersion,
+		GoodsGift:     goodsGift,
+		GoodsFitting:  goodsFitting,
+		GoodsKeywords: goodsKeywords,
+		GoodsDesc:     goodsDesc,
+		GoodsContent:  goodsContent,
+		IsHot:         isHot,
+		IsBest:        isBest,
+		IsNew:         isNew,
+		GoodsTypeID:   goodsTypeID,
+		Sort:          sort,
+		Status:        status,
+		GoodsColor:    goodsColorStr,
+		GoodsImg:      goodsImg,
+	}
+
+	// 内部的报错会传给Transaction的返回值吗？不行应该怎么解决
+	if err := dao.DB.Transaction(func(tx *gorm.DB) error {
+		// 返回任何错误都会回滚事务
+
+		// 4.增加商品数据
+		if err := tx.Save(&goods).Error; err != nil {
+			con.Error(c, "修改商品失败", -1, nil)
+			return err
+		}
+
+		// 5.修改图库 增加图库信息
+		// 上传的多个商品图片（"多个图片上传成功后，前端得到了这些图片的url绑定在了隐藏的input输入框中，再传到后端"）
+		errChan := make(chan error, 1)
+		wg.Add(1)
+		go func() {
+			defer wg.Done() // 在函数结束时调用 Done() 方法
+			goodsImageList := c.PostFormArray("goods_image_list")
+			for _, v := range goodsImageList {
+				goodsImgObj := models.GoodsImage{
+					GoodsID: goods.ID,
+					ImgUrl:  v,
+					Sort:    10,
+					Status:  1,
+				}
+				if err := tx.Create(&goodsImgObj).Error; err != nil {
+					con.Error(c, "修改商品失败", -1, nil)
+					errChan <- err
+					return
+				}
+			}
+		}()
+
+		// 6.修改规格包装 (要先删除原来的，再添加新的)
+		// 上传的多个商品属性ID以及属性ID对应的值  goods_attr添加数据
+
+		wg.Add(1)
+		go func() {
+			goodsAttrObj := models.GoodsAttr{}
+			dao.DB.Where("goods_id = ?", goods.ID).Delete(goodsAttrObj)
+
+			attrIdList := c.PostFormArray("attr_id_list")
+			attrValueList := c.PostFormArray("attr_value_list")
+			length := len(attrIdList)
+			for i := 0; i < length; i++ {
+				defer wg.Done() // 在函数结束时调用 Done() 方法
+				// 根据attrIdList获取商品类型属性表(goodsTypeAttribute)的数据
+				GoodsTypeAttributeID := logic.StringToInt(attrIdList[i])
+				GoodsTypeAttributeObj := models.GoodsTypeAttribute{ID: GoodsTypeAttributeID}
+				if err := tx.Find(&GoodsTypeAttributeObj).Error; err != nil {
+					con.Error(c, "修改商品失败", -1, nil)
+					errChan <- err
+					return
+				}
+
+				//给商品属性里面增加数据
+				goodsAttrObj := models.GoodsAttr{
+					GoodsID:         goods.ID,
+					AttributeTitle:  GoodsTypeAttributeObj.Title,
+					AttributeType:   GoodsTypeAttributeObj.AttrType,
+					AttributeID:     GoodsTypeAttributeObj.ID,
+					AttributeCateID: GoodsTypeAttributeObj.CateID,
+					AttributeValue:  attrValueList[i],
+					Status:          1,
+					Sort:            10,
+				}
+				if err := tx.Create(&goodsAttrObj).Error; err != nil {
+					con.Error(c, "修改商品失败", -1, nil)
+					errChan <- err
+					return
+				}
+			}
+		}()
+
+		// 等待所有协程完成
+		go func() {
+			wg.Wait()
+			close(errChan) // 关闭通道
+		}()
+
+		// 从通道中接收错误信息
+		for err := range errChan { // 通道将保持打开状态，range 循环将一直等待，直到通道关闭或有新的值被发送到通道中。
+			if err != nil {
+				con.Error(c, "修改商品失败", -1, nil)
+				return err
+			}
+		}
+
+		// 返回 nil 提交事务
+		return nil
+	}); err != nil {
+		con.Error(c, "修改商品失败", -1, nil)
+		return
+	}
+
+	con.Success(c, "修改商品成功", 0, nil)
+}
+
+// 异步修改商品相册图片和颜色绑定信息
+func (con GoodsController) ChangeGoodsImageColor(c *gin.Context) {
+	goods_image_id := logic.StringToInt(c.PostForm("goods_image_id"))
+	color_id := logic.StringToInt(c.PostForm("color_id"))
+	if err := dao.DB.Model(&models.GoodsImage{}).Where("id = ?", goods_image_id).Update("color_id", color_id).Error; err != nil {
+		con.Error(c, "商品图库颜色绑定修改失败", -1, nil)
+		return
+	}
+	con.Success(c, "商品图库颜色绑定修改成功", 0, nil)
+}
+
+// 异步删除商品相册信息
+func (con GoodsController) RemoveGoodsImage(c *gin.Context) {
+	goods_image_id := logic.StringToInt(c.PostForm("goods_image_id"))
+
+	if err := dao.DB.Delete(&models.GoodsImage{}, goods_image_id).Error; err != nil {
+		con.Error(c, "删除商品相册信息失败", -1, nil)
+		return
+	}
+	con.Success(c, "删除商品相册信息成功", 0, nil)
 }

@@ -78,9 +78,12 @@ func SetupAdminRouters(r *gin.Engine) {
 		adminRouters.GET("goodsColor/getGoodsColorList", admin.GoodsColorController{}.GetGoodsColorList) // 获取所有的颜色列表
 
 		//商品管理
-		adminRouters.POST("goods/imageUpload", admin.GoodsController{}.ImageUpload)          //froala富文本编辑器上传图片
-		adminRouters.GET("goods/getGoodsList", admin.GoodsController{}.GetGoodsList)         //获取商品列表信息
-		adminRouters.GET("goods/getGoodsInfo", admin.GoodsCateController{}.GetGoodsCateInfo) //获取商品的所有信息
-		adminRouters.POST("goods/add", admin.GoodsController{}.Add)                          //添加商品(goroutine有无问题？？？)
+		adminRouters.POST("goods/imageUpload", admin.GoodsController{}.ImageUpload)                     //froala富文本编辑器上传图片
+		adminRouters.GET("goods/getGoodsList", admin.GoodsController{}.GetGoodsList)                    //获取商品列表信息
+		adminRouters.GET("goods/getGoodsInfo", admin.GoodsCateController{}.GetGoodsCateInfo)            //获取商品的所有信息
+		adminRouters.POST("goods/add", admin.GoodsController{}.Add)                                     //添加商品(goroutine有无问题？？？)
+		adminRouters.POST("goods/edit", admin.GoodsController{}.Edit)                                   //修改商品(goroutine有无问题？？？)
+		adminRouters.POST("goods/changeGoodsImageColor", admin.GoodsController{}.ChangeGoodsImageColor) //异步修改商品的图库信息（将图片和图片颜色进行绑定）
+		adminRouters.POST("goods/removeGoodsImage", admin.GoodsController{}.RemoveGoodsImage)           //异步删除商品相册信息
 	}
 }

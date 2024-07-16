@@ -7,7 +7,7 @@ import (
 
 // string转为int类型
 func StringToInt(str string) int {
-	n, _ := strconv.Atoi(str)
+	n, _ := strconv.Atoi(str) //如果出错，n=0
 	return n
 }
 
