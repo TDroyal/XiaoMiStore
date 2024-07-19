@@ -47,7 +47,7 @@ func CloseMySQL() {
 
 // 迁移模型  AutoMigrate 用于自动迁移您的 schema，保持您的 schema 是最新的。
 func InitModels() error {
-	if err := DB.AutoMigrate(&models.Admin{}, &models.Role{}, &models.Access{}, &models.RoleAccess{}, &models.Focus{}, &models.GoodsCate{}, &models.GoodsType{}, &models.GoodsTypeAttribute{}, &models.GoodsColor{}, &models.Goods{}, &models.GoodsAttr{}, &models.GoodsImage{}); err != nil {
+	if err := DB.AutoMigrate(&models.Admin{}, &models.Role{}, &models.Access{}, &models.RoleAccess{}, &models.Focus{}, &models.GoodsCate{}, &models.GoodsType{}, &models.GoodsTypeAttribute{}, &models.GoodsColor{}, &models.Goods{}, &models.GoodsAttr{}, &models.GoodsImage{}, &models.Nav{}, &models.Setting{}); err != nil {
 		return err
 	}
 	return nil

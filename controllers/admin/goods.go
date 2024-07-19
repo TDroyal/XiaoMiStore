@@ -29,15 +29,22 @@ func (con GoodsController) GetGoodsList(c *gin.Context) {
 	}
 	pageSize := 5
 
+	// 如果搜索框中有内容，应该把搜索框中的内容带上
+	keyword := c.Query("keyword")
+	var condition string
+	if len(keyword) > 0 {
+		condition = "title like \"%" + keyword + "%\""
+	}
+
 	goodsList := []models.Goods{}
-	if err := dao.DB.Offset((page - 1) * pageSize).Limit(pageSize).Find(&goodsList).Error; err != nil {
+	if err := dao.DB.Where(condition).Offset((page - 1) * pageSize).Limit(pageSize).Find(&goodsList).Error; err != nil {
 		con.Success(c, "获取商品列表信息失败", -1, nil)
 		return
 	}
 
 	// 获取商品总数量
 	var totalCount int64
-	if err := dao.DB.Model(&models.Goods{}).Count(&totalCount).Error; err != nil {
+	if err := dao.DB.Model(&models.Goods{}).Where(condition).Count(&totalCount).Error; err != nil {
 		con.Success(c, "获取商品列表信息失败", -1, nil)
 		return
 	}
@@ -480,6 +487,32 @@ func (con GoodsController) Edit(c *gin.Context) {
 	}
 
 	con.Success(c, "修改商品成功", 0, nil)
+}
+
+// 删除商品
+func (con GoodsController) Delete(c *gin.Context) {
+	id := logic.StringToInt(c.PostForm("id"))
+	// 删除goods表，goods_attr表，goods_image表  事务
+
+	// 事务保证3个同时删除了
+	dao.DB.Transaction(func(tx *gorm.DB) error {
+		// 返回任何错误都会回滚事务
+		goods := models.Goods{ID: id}
+		if err := tx.Delete(&goods).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Where("goods_id = ?", id).Delete(&models.GoodsAttr{}).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Where("goods_id = ?", id).Delete(&models.GoodsImage{}).Error; err != nil {
+			return err
+		}
+
+		// 返回 nil 提交事务
+		return nil
+	})
 }
 
 // 异步修改商品相册图片和颜色绑定信息

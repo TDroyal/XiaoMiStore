@@ -83,7 +83,19 @@ func SetupAdminRouters(r *gin.Engine) {
 		adminRouters.GET("goods/getGoodsInfo", admin.GoodsCateController{}.GetGoodsCateInfo)            //获取商品的所有信息
 		adminRouters.POST("goods/add", admin.GoodsController{}.Add)                                     //添加商品(goroutine有无问题？？？)
 		adminRouters.POST("goods/edit", admin.GoodsController{}.Edit)                                   //修改商品(goroutine有无问题？？？)
+		adminRouters.POST("goods/delete", admin.GoodsController{}.Delete)                               //删除商品
 		adminRouters.POST("goods/changeGoodsImageColor", admin.GoodsController{}.ChangeGoodsImageColor) //异步修改商品的图库信息（将图片和图片颜色进行绑定）
 		adminRouters.POST("goods/removeGoodsImage", admin.GoodsController{}.RemoveGoodsImage)           //异步删除商品相册信息
+
+		// 导航栏管理
+		adminRouters.GET("nav/getNavList", admin.NavController{}.GetNavList) //获取导航栏列表信息
+		adminRouters.GET("nav/getNavInfo", admin.NavController{}.GetNavInfo) //获取导航栏信息
+		adminRouters.POST("nav/add", admin.NavController{}.Add)              //添加导航栏
+		adminRouters.POST("nav/edit", admin.NavController{}.Edit)            //编辑导航栏
+		adminRouters.POST("nav/delete", admin.NavController{}.Delete)        //删除导航栏
+
+		// 系统设置管理
+		adminRouters.GET("setting/getSettingInfo", admin.SettingController{}.GetSettingInfo) //获取系统设置信息
+		adminRouters.POST("setting/edit", admin.SettingController{}.Edit)                    //编辑系统设置信息
 	}
 }
