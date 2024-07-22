@@ -137,9 +137,23 @@ func (con GoodsController) ImageUpload(c *gin.Context) {
 		})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"link": "/" + imgDir, //{link: 'path/to/image.jpg'}  需要把后端ip拼接在最前面
-	})
+
+	if logic.GetOssStatus() != 1 { //将图片存到本地，就生成缩略图
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			logic.ResizeGoodsImage(imgDir)
+		}()
+		c.JSON(http.StatusOK, gin.H{
+			"link": imgDir, //{link: 'path/to/image.jpg'}  需要把后端ip拼接在最前面
+		})
+	} else { //开启oss，拼接的地址应该加上oss的域名
+		domain, _ := logic.GetSettingFromColumn("OssDomain")
+		c.JSON(http.StatusOK, gin.H{
+			"link": domain + imgDir, //{link: 'path/to/image.jpg'}  需要把oss 域名拼接在最前面
+		})
+	}
+
 }
 
 // *********************这种方法要弄明白*********
@@ -196,6 +210,15 @@ func (con GoodsController) Add(c *gin.Context) {
 	if upload_err != nil {
 		con.Error(c, "添加商品失败", -1, nil)
 		return
+	}
+
+	// 生成缩略图
+	if logic.GetOssStatus() != 1 { //将图片存到本地，就生成缩略图
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			logic.ResizeGoodsImage(goodsImg)
+		}()
 	}
 
 	// 下面3步要么都成功，要么都不成功，事务维护数据库的一致性
@@ -360,6 +383,15 @@ func (con GoodsController) Edit(c *gin.Context) {
 	if upload_err != nil {
 		con.Error(c, "添加商品失败", -1, nil)
 		return
+	}
+
+	// 生成缩略图
+	if logic.GetOssStatus() != 1 { //将图片存到本地，就生成缩略图
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			logic.ResizeGoodsImage(goodsImg)
+		}()
 	}
 
 	// 下面3步要么都成功，要么都不成功，事务维护数据库的一致性
