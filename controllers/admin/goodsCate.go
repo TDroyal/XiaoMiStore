@@ -16,8 +16,8 @@ type GoodsCateController struct {
 func (con GoodsCateController) GetGoodsCateList(c *gin.Context) {
 	//获取商品分类(同时加载出来它对应的子分类)
 	goodsCateList := []models.GoodsCate{}
-	if err := dao.DB.Where("pid = ?", 0).Preload("GoodsCateItems", func(db *gorm.DB) *gorm.DB {
-		return db.Order("goods_cate.sort DESC")
+	if err := dao.DB.Where("pid = ? and status = ?", 0, 1).Preload("GoodsCateItems", func(db *gorm.DB) *gorm.DB {
+		return db.Where("goods_cate.status = ?", 1).Order("goods_cate.sort DESC")
 	}).Order("sort desc").Find(&goodsCateList).Error; err != nil {
 		con.Error(c, "获取商品分类列表失败", -1, nil)
 		return

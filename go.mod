@@ -9,6 +9,7 @@ require (
 	github.com/hunterhug/go_image v1.0.1
 	github.com/mojocn/base64Captcha v1.3.6
 	github.com/redis/go-redis/v9 v9.5.3
+	gopkg.in/ini.v1 v1.67.0
 	gorm.io/driver/mysql v1.5.7
 	gorm.io/gorm v1.25.10
 )

@@ -1,7 +1,7 @@
 package routers
 
 import (
-	"XiaoMiStore/controllers/admin"
+	"XiaoMiStore/controllers/mistore"
 
 	"github.com/gin-gonic/gin"
 )
@@ -9,6 +9,6 @@ import (
 func SetupDefaultRouters(r *gin.Engine) {
 	defaultRouters := r.Group("/")
 	{
-		defaultRouters.GET("/", admin.LoginController{}.Index)
+		defaultRouters.GET("/", mistore.DefaultController{}.Index)
 	}
 }
