@@ -1,7 +1,6 @@
 package mistore
 
 import (
-	"XiaoMiStore/controllers/admin"
 	"XiaoMiStore/dao"
 	"XiaoMiStore/logic"
 	"XiaoMiStore/models"
@@ -12,7 +11,7 @@ import (
 )
 
 type DefaultController struct {
-	admin.BaseController
+	BaseController
 }
 
 // 前台首页获取相应的数据（对相应的数据进行缓存）

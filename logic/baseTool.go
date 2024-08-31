@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gomarkdown/markdown"
 	. "github.com/hunterhug/go_image" //加个点，就可以直接调用包里面的方法函数，不需要go_iamge.func()
 )
 
@@ -68,3 +69,32 @@ func ResizeGoodsImage(filename string) {
 // oss不需要生成缩略图，直接在访问图片的地址后面加几个参数即可。
 // 图片的oss原地址 http://xxx/111.png
 // 缩略图地址  http://xxx/111.png?x-oss-process=image/resize,h_200
+
+// 将markdown文本转为html文本
+
+/*
+如果str是
+
+### 嘻嘻
+**cnm**
+
+那么解析出来的html文本是
+
+<h3>嘻嘻</h3>
+<strong>cnm</strong>
+
+
+*/
+
+func FormatAttr(str string) string {
+
+	tempSlice := strings.Split(str, "\n")
+
+	var htmlStr string
+	for _, v := range tempSlice {
+		md := []byte(v)
+		htmlStr += string(markdown.ToHTML(md, nil, nil))
+	}
+
+	return htmlStr
+}

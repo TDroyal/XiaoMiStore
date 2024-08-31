@@ -276,7 +276,7 @@ func (con GoodsController) Add(c *gin.Context) {
 					Status:  1,
 				}
 				if err := tx.Create(&goodsImgObj).Error; err != nil {
-					con.Error(c, "添加商品失败", -1, nil)
+					// con.Error(c, "添加商品失败", -1, nil)
 					errChan <- err
 					return
 				}
@@ -287,16 +287,16 @@ func (con GoodsController) Add(c *gin.Context) {
 		// 上传的多个商品属性ID以及属性ID对应的值  goods_attr添加数据
 		wg.Add(1)
 		go func() {
+			defer wg.Done() // 在函数结束时调用 Done() 方法
 			attrIdList := c.PostFormArray("attr_id_list")
 			attrValueList := c.PostFormArray("attr_value_list")
 			length := len(attrIdList)
 			for i := 0; i < length; i++ {
-				defer wg.Done() // 在函数结束时调用 Done() 方法
 				// 根据attrIdList获取商品类型属性表(goodsTypeAttribute)的数据
 				GoodsTypeAttributeID := logic.StringToInt(attrIdList[i])
 				GoodsTypeAttributeObj := models.GoodsTypeAttribute{ID: GoodsTypeAttributeID}
 				if err := tx.Find(&GoodsTypeAttributeObj).Error; err != nil {
-					con.Error(c, "添加商品失败", -1, nil)
+					// con.Error(c, "添加商品失败", -1, nil)
 					errChan <- err
 					return
 				}
@@ -313,7 +313,7 @@ func (con GoodsController) Add(c *gin.Context) {
 					Sort:            10,
 				}
 				if err := tx.Create(&goodsAttrObj).Error; err != nil {
-					con.Error(c, "添加商品失败", -1, nil)
+					// con.Error(c, "添加商品失败", -1, nil)
 					errChan <- err
 					return
 				}

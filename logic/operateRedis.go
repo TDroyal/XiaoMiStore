@@ -41,7 +41,7 @@ func RedisDel(key string) error {
 func RSet(key string, val interface{}, expiration time.Duration) error {
 	// val 可能是结构体，map，string等类型的数据，需要先把它转为json字符串
 	if dao.RedisEnable {
-		v, parseErr := json.Marshal(val)
+		v, parseErr := json.Marshal(val) //json.Marshal(&val)
 		if parseErr != nil {
 			return parseErr
 		}
