@@ -47,3 +47,25 @@ func (con DefaultController) Index(c *gin.Context) {
 		"topNavList": topNavList,
 	})
 }
+
+// 测试封装的cookie操作
+func (con DefaultController) TestCookie(c *gin.Context) {
+	type User struct {
+		Username string
+		Password string
+		age      int
+	}
+	u := User{
+		"royal_111",
+		"123456",
+		18,
+	}
+	err := logic.Cookie.Set(c, "user", &u)
+	var getUser User
+	ok := logic.Cookie.Get(c, "user", &getUser)
+	con.Success(c, "获取cookie数据成功", 0, gin.H{
+		"error": err,
+		"ok":    ok,
+		"user":  getUser,
+	})
+}

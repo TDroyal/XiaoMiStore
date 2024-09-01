@@ -17,7 +17,7 @@ type Goods struct {
 	Price         float64 `gorm:"type:decimal(10,2)"` //价格
 	MarketPrice   float64 `gorm:"type:decimal(10,2)"` //市场价格（原价）
 	RelationGoods string  `gorm:"type:varchar(255)"`  //关联商品 1,23,24  表示这些商品和当前商品关联   比如小米9-8G-256G  小米9-4G-128G
-	GoodsAttr     string  `gorm:"type:varchar(1024)"` //商品属性
+	GoodsAttr     string  `gorm:"type:varchar(1024)"` //商品属性   额外的属性  格式： 颜色：红色，白色 | 尺寸：41，42，43
 	GoodsColor    string  `gorm:"type:varchar(255)"`  //商品颜色
 	GoodsVersion  string  `gorm:"type:varchar(255)"`  //商品版本
 	GoodsImg      string  `gorm:"type:varchar(255)"`  //商品图片
