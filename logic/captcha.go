@@ -33,7 +33,7 @@ const (
 	CaptchaKeyPrefix string = "captcha:"
 )
 
-func (r RedisMemStore) Set(id string, value string) error {
+func (r RedisMemStore) Set(id string, value string) error { // 图形验证码存储在redis中，两分钟过期
 	var key = CaptchaKeyPrefix + id
 	if err := RedisSet(key, value, 2*time.Minute); err != nil {
 		return err
@@ -48,7 +48,7 @@ func (r RedisMemStore) Get(id string, clear bool) string {
 		fmt.Println(err)
 		return ""
 	}
-	if clear {
+	if clear { // 取值之后就从redis中删除此验证码
 		err = RedisDel(key)
 		if err != nil {
 			fmt.Println(err)

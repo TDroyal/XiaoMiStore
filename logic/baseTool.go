@@ -2,6 +2,7 @@ package logic
 
 import (
 	"fmt"
+	"math/rand"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -29,10 +30,21 @@ func IntToString(n int) string {
 	return str
 }
 
-// 获取当前的日期 年月日
+// 获取当前的日期 年月日  格式：YYYYMMDD
 func GetDate() string {
 	time := time.Now()
-	return IntToString(time.Year()) + IntToString(int(time.Month())) + IntToString(time.Day())
+
+	m := int(time.Month())
+	d := time.Day()
+
+	parseFunc := func(n int) string {
+		if n < 10 {
+			return "0" + IntToString(n)
+		}
+		return IntToString(n)
+	}
+
+	return IntToString(time.Year()) + parseFunc(m) + parseFunc(d)
 }
 
 // 获得当前的Unix时间戳(毫秒)
@@ -97,4 +109,13 @@ func FormatAttr(str string) string {
 	}
 
 	return htmlStr
+}
+
+// 生成一串随机数
+func GetRandomNum(n int) string { // 传入生成随机数的长度
+	var randomstr string
+	for i := 0; i < n; i++ {
+		randomstr += IntToString(rand.Intn(10))
+	}
+	return randomstr
 }

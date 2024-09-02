@@ -7,7 +7,7 @@ import (
 )
 
 func SetupDefaultRouters(r *gin.Engine) {
-	defaultRouters := r.Group("/")
+	defaultRouters := r.Group("/default")
 	{
 		defaultRouters.GET("/", mistore.DefaultController{}.Index)
 		defaultRouters.GET("/testCookie", mistore.DefaultController{}.TestCookie)                                   // 测试封装的cookie操作
@@ -24,5 +24,13 @@ func SetupDefaultRouters(r *gin.Engine) {
 		defaultRouters.POST("/cart/changeOneCartCheckedStatus", mistore.CartController{}.ChangeOneCartCheckedStatus) // 改变购物车列表中一个商品的选中状态
 		defaultRouters.POST("/cart/changeAllCartCheckedStatus", mistore.CartController{}.ChangeAllCartCheckedStatus) // 改变购物车列表中所有商品的选中状态（全选反选）
 		defaultRouters.POST("/cart/delOneCart", mistore.CartController{}.DelOneCart)                                 // 删除购物车中的某条数据
+
+		// 用户登录/注册的相关路由
+		defaultRouters.GET("/pass/generateCaptcha", mistore.PassController{}.GenerateACaptcha)         //生成图形验证码
+		defaultRouters.POST("/pass/sendCode", mistore.PassController{}.SendCode)                       // 向用户手机号发送验证码
+		defaultRouters.POST("/pass/vertifyStep1ToStep2", mistore.PassController{}.VertifyStep1ToStep2) // 注册步骤一跳转到步骤二需要进行验证（防止用户直接打开注册的步骤二页面）
+		defaultRouters.POST("/pass/vertifySmsCode", mistore.PassController{}.VertifySmsCode)           // 验证短信验证码是否正确
+		defaultRouters.POST("/pass/vertifyStep2ToStep3", mistore.PassController{}.VertifyStep2ToStep3) // 注册步骤二跳转到步骤三需要进行验证（防止用户直接打开注册的步骤三页面）
+		defaultRouters.POST("/pass/doRegister", mistore.PassController{}.DoRegister)                   // 输入密码完成注册
 	}
 }
