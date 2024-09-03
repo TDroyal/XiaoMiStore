@@ -2,6 +2,7 @@ package routers
 
 import (
 	"XiaoMiStore/controllers/mistore"
+	"XiaoMiStore/middlewares"
 
 	"github.com/gin-gonic/gin"
 )
@@ -32,5 +33,16 @@ func SetupDefaultRouters(r *gin.Engine) {
 		defaultRouters.POST("/pass/vertifySmsCode", mistore.PassController{}.VertifySmsCode)           // 验证短信验证码是否正确
 		defaultRouters.POST("/pass/vertifyStep2ToStep3", mistore.PassController{}.VertifyStep2ToStep3) // 注册步骤二跳转到步骤三需要进行验证（防止用户直接打开注册的步骤三页面）
 		defaultRouters.POST("/pass/doRegister", mistore.PassController{}.DoRegister)                   // 输入密码完成注册
+		defaultRouters.POST("/pass/login", mistore.PassController{}.Login)                             // 用户登录
+
+		// 结算价钱的路由需要用户登录了才能执行
+		defaultRouters.POST("/buy/test", middlewares.InitUserAuthMiddleware, mistore.BuyController{}.TestBuy) // 测试中间件 （登录的用户才会执行到后面的handler去）
+
+		// 操作收货地址相关路由
+		defaultRouters.GET("/address/getOneAddress", middlewares.InitUserAuthMiddleware, mistore.AddressController{}.GetOneAddress)                // 获取一个收货地址
+		defaultRouters.GET("/address/getAllAddress", middlewares.InitUserAuthMiddleware, mistore.AddressController{}.GetAllAddress)                // 获取所有收货地址
+		defaultRouters.POST("/address/add", middlewares.InitUserAuthMiddleware, mistore.AddressController{}.AddAddress)                            // 增加收货地址
+		defaultRouters.POST("/address/edit", middlewares.InitUserAuthMiddleware, mistore.AddressController{}.EditAddress)                          // 编辑收货地址
+		defaultRouters.POST("/address/changeDefaultAddress", middlewares.InitUserAuthMiddleware, mistore.AddressController{}.ChangeDefaultAddress) // 切换默认收获地址
 	}
 }

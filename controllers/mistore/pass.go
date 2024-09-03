@@ -317,3 +317,43 @@ func (con PassController) DoRegister(c *gin.Context) {
 	}
 
 }
+
+// 登录
+/*
+手机号
+密码
+图形验证码
+
+将用户信息存储在cookie中
+*/
+func (con PassController) Login(c *gin.Context) {
+	phone := c.PostForm("phone")
+	password := c.PostForm("password")
+	captchaID := c.PostForm("CaptchaID")
+	vertifyValue := c.PostForm("vertifyValue") // 用户输入的图形验证码
+
+	// 1. 验证图形验证码
+	if result := logic.VerifyCaptcha(captchaID, vertifyValue); !result {
+		con.Error(c, "图形验证码错误", -1, nil)
+		return
+	}
+
+	// 2. 验证账户密码
+	user := []models.User{}
+	if err := dao.DB.Where("phone = ? and password = ?", phone, logic.GetMD5(password)).Find(&user).Error; err != nil {
+		con.Error(c, "登录失败", -1, nil)
+		return
+	}
+	if len(user) == 0 {
+		con.Error(c, "手机号或者密码错误", -1, nil)
+		return
+	}
+	// 3. 执行登录（把用户信息写入cookie）
+	logic.Cookie.Set(c, "userinfo", &user[0])
+	con.Success(c, "用户登录成功", 0, nil)
+}
+
+// 退出登录，就是删除cookie里面的用户信息
+func (con PassController) LogOut(c *gin.Context) {
+	logic.Cookie.Remove(c, "userinfo")
+}
