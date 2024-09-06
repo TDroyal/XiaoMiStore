@@ -2,7 +2,7 @@ package models
 
 // 购物车表
 type Cart struct {
-	ID           int
+	ID           int // 商品ID，不是自增
 	Title        string
 	Price        float64
 	GoodsVersion string

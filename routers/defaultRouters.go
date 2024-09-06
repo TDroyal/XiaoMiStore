@@ -36,7 +36,10 @@ func SetupDefaultRouters(r *gin.Engine) {
 		defaultRouters.POST("/pass/login", mistore.PassController{}.Login)                             // 用户登录
 
 		// 结算价钱的路由需要用户登录了才能执行
-		defaultRouters.POST("/buy/test", middlewares.InitUserAuthMiddleware, mistore.BuyController{}.TestBuy) // 测试中间件 （登录的用户才会执行到后面的handler去）
+		defaultRouters.POST("/buy/test", middlewares.InitUserAuthMiddleware, mistore.BuyController{}.TestBuy)                         // 测试中间件 （登录的用户才会执行到后面的handler去）
+		defaultRouters.GET("/buy/getCheckedCartList", middlewares.InitUserAuthMiddleware, mistore.BuyController{}.GetCheckedCartList) // 进入结算界面  获取需要结算的商品列表
+		defaultRouters.POST("/buy/doCheckout", middlewares.InitUserAuthMiddleware, mistore.BuyController{}.DoCheckout)                // 在结算界面  提交订单
+		defaultRouters.GET("/buy/getOrderInfo", middlewares.InitUserAuthMiddleware, mistore.BuyController{}.GetOrderInfo)             // 支付页面，获取订单相关的信息
 
 		// 操作收货地址相关路由
 		defaultRouters.GET("/address/getOneAddress", middlewares.InitUserAuthMiddleware, mistore.AddressController{}.GetOneAddress)                // 获取一个收货地址

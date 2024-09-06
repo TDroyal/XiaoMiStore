@@ -119,3 +119,9 @@ func GetRandomNum(n int) string { // 传入生成随机数的长度
 	}
 	return randomstr
 }
+
+// 获取订单ID
+func GetOrderID() string {
+	order_id := GetDate() + GetRandomNum(12)
+	return order_id
+}
