@@ -124,17 +124,17 @@ func (con RoleController) GetRoleList(c *gin.Context) { //后期按需求改成�
 		return
 	}
 
-	var roleList []models.Role
-	temp := res.GetRoleList()
-	for _, v := range temp {
-		roleList = append(roleList, models.Role{
-			Title:       v.GetTitle(),
-			Description: v.GetDescription(),
-			Status:      int(v.GetStatus()),
-		})
-	}
+	// var roleList []models.Role
+	// temp := res.GetRoleList()
+	// for _, v := range temp {
+	// 	roleList = append(roleList, models.Role{
+	// 		Title:       v.GetTitle(),
+	// 		Description: v.GetDescription(),
+	// 		Status:      int(v.GetStatus()),
+	// 	})
+	// }
 
-	con.Success(c, res.GetMessage(), int(res.GetStatus()), roleList) // 得到的role列表可行吗？应该是要转一下
+	con.Success(c, res.GetMessage(), int(res.GetStatus()), res.RoleList) // 得到的role列表可行吗？可行
 }
 
 func (con RoleController) Add(c *gin.Context) { //添加角色
@@ -170,12 +170,12 @@ func (con RoleController) GetRoleInfo(c *gin.Context) {
 		con.Error(c, res.GetMessage(), int(res.GetStatus()), nil)
 		return
 	}
-	role := models.Role{
-		Title:       res.GetRoleInfo().GetTitle(),
-		Description: res.GetRoleInfo().Description,
-		Status:      int(res.GetRoleInfo().GetStatus()),
-	}
-	con.Success(c, res.GetMessage(), int(res.GetStatus()), role)
+	// role := models.Role{
+	// 	Title:       res.GetRoleInfo().GetTitle(),
+	// 	Description: res.GetRoleInfo().Description,
+	// 	Status:      int(res.GetRoleInfo().GetStatus()),
+	// }
+	con.Success(c, res.GetMessage(), int(res.GetStatus()), res.GetRoleInfo())
 }
 
 func (con RoleController) Edit(c *gin.Context) {
