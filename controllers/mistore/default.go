@@ -7,7 +7,13 @@ import (
 	"fmt"
 	"time"
 
+	"context"
+
 	"github.com/gin-gonic/gin"
+
+	pb "XiaoMiStore/proto/goods" // 把服务端的proto文件拿过来
+
+	"go-micro.dev/v4/logger"
 )
 
 type DefaultController struct {
@@ -67,5 +73,42 @@ func (con DefaultController) TestCookie(c *gin.Context) {
 		"error": err,
 		"ok":    ok,
 		"user":  getUser,
+	})
+}
+
+// 调用goods微服务
+var (
+	service = "goods"
+	version = "latest"
+)
+
+func (con DefaultController) AddGoods(c *gin.Context) {
+	// 如果未开启微服务，调用这个接口会让程序崩溃，怎么解决 用panic和recover
+	defer func() {
+		if r := recover(); r != nil {
+			logger.Error("Recovered from panic:", r)
+			con.Error(c, "An error occurred while processing the request", -1, nil) // 返回适当的错误响应
+		}
+	}()
+
+	// Create client
+	gclient := pb.NewGoodsService(service, logic.GoodsMicroClient)
+
+	// Call service
+	rsp, err := gclient.AddGoods(context.Background(), &pb.AddGoodsRequest{
+		Title:   "小米手机",
+		Price:   9999.9,
+		Content: "便宜好用",
+	})
+
+	if err != nil {
+		// logger.Fatal(err)
+		panic(err) // 主动触发 panic
+	}
+
+	logger.Info(rsp)
+
+	con.Success(c, rsp.GetMessage(), 0, gin.H{
+		"status": rsp.GetSuccess(),
 	})
 }

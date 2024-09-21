@@ -3,9 +3,12 @@ package logic
 // 封装图形验证码
 // 官方文档 https://github.com/mojocn/base64Captcha
 import (
+	"context"
 	"fmt"
 	"image/color"
 	"time"
+
+	pb "XiaoMiStore/proto/captcha"
 
 	"github.com/mojocn/base64Captcha"
 )
@@ -67,7 +70,7 @@ func (r RedisMemStore) Verify(id, answer string, clear bool) bool {
 var store base64Captcha.Store = RedisMemStore{}
 
 // 获取验证码   //生成字符串的验证码
-func GenerateCaptcha() (id, b64s, answer string, err error) {
+func GenerateCaptchaLocal() (id, b64s, answer string, err error) {
 	//配置验证码信息   https://captcha.mojotv.cn/.netlify/functions/captcha
 	DriverString := base64Captcha.DriverString{
 		Height:          40,
@@ -93,7 +96,40 @@ func GenerateCaptcha() (id, b64s, answer string, err error) {
 }
 
 // 验证验证码
-func VerifyCaptcha(id, verify_string string) bool { //verify_string是客户端传过来的字符串
+func VerifyCaptchaLocal(id, verify_string string) bool { //verify_string是客户端传过来的字符串
 	verify_pass := store.Verify(id, verify_string, true) //是否验证通过
 	return verify_pass
+}
+
+// 新增远程验证码微服务
+var (
+	service = "captcha"
+	version = "latest"
+)
+
+func GenerateCaptcha() (id, b64s, answer string, err error) {
+	//配置验证码信息   https://captcha.mojotv.cn/.netlify/functions/captcha
+	// Create client
+	cClient := pb.NewCaptchaService(service, CaptchaMicroClient)
+
+	// Call service
+	res, err := cClient.GenerateCaptcha(context.Background(), &pb.GenerateCaptchaRequest{
+		Height: 40,
+		Width:  100,
+		Length: 4,
+	})
+
+	return res.Id, res.B64S, res.Answer, err
+}
+
+// 验证验证码
+func VerifyCaptcha(id, verify_string string) bool { //verify_string是客户端传过来的字符串
+	// Create client
+	cClient := pb.NewCaptchaService(service, CaptchaMicroClient)
+	// Call service
+	res, _ := cClient.VerifyCaptcha(context.Background(), &pb.VerifyCaptchaRequest{
+		Id:           id,
+		VerifyString: verify_string,
+	})
+	return res.VerifyPass
 }

@@ -17,6 +17,9 @@ func SetupDefaultRouters(r *gin.Engine) {
 		defaultRouters.GET("/getImageList", mistore.ProductController{}.GetImageList)                               // 根据商品id和颜色id获取商品图库
 		defaultRouters.POST("/markdown_to_html", mistore.ProductController{}.MarkDownToHTML)                        // 将markdown文本转为html文本的接口（写着测试用的）
 
+		// 测试调用goods微服务接口
+		defaultRouters.POST("/addgoods", mistore.DefaultController{}.AddGoods)
+
 		// 购物车目前都是在cookie中实现的，用户未登录
 		defaultRouters.GET("/cart/getCartData", mistore.CartController{}.GetCartData)                                // 获取购物车数据
 		defaultRouters.POST("/cart/addCart", mistore.CartController{}.AddCart)                                       // 添加购物车
