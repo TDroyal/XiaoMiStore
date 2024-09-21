@@ -4,6 +4,8 @@ import (
 	"XiaoMiStore/dao"
 	"XiaoMiStore/logic"
 	"XiaoMiStore/models"
+	rolePb "XiaoMiStore/proto/role"
+	"context"
 	"fmt"
 	"strings"
 
@@ -15,7 +17,9 @@ type RoleController struct { //角色管理
 	BaseController
 }
 
-func (con RoleController) GetRoleList(c *gin.Context) { //后期按需求改成分页查询
+// 单体架构：调用本地的实现的方法
+
+func (con RoleController) GetRoleListLocal(c *gin.Context) { //后期按需求改成分页查询
 	roleList := []models.Role{}
 	if err := dao.DB.Find(&roleList).Error; err != nil {
 		con.Error(c, "获取角色列表失败，请稍后再试", -1, nil)
@@ -24,7 +28,7 @@ func (con RoleController) GetRoleList(c *gin.Context) { //后期按需求改成�
 	con.Success(c, "获取角色列表成功", 0, roleList)
 }
 
-func (con RoleController) Add(c *gin.Context) { //添加角色
+func (con RoleController) AddLocal(c *gin.Context) { //添加角色
 	title := strings.Trim(c.PostForm("title"), " ")             //角色名称  (去除输入字符串中的空格)
 	description := strings.Trim(c.PostForm("description"), " ") //角色描述
 
@@ -40,7 +44,7 @@ func (con RoleController) Add(c *gin.Context) { //添加角色
 	con.Success(c, "增加角色成功", 0, nil)
 }
 
-func (con RoleController) GetRoleInfo(c *gin.Context) {
+func (con RoleController) GetRoleInfoLocal(c *gin.Context) {
 	//获取需要修改的角色id           //首先把角色信息传到对应的表单框中
 	id := c.Query("id")
 
@@ -53,7 +57,7 @@ func (con RoleController) GetRoleInfo(c *gin.Context) {
 	con.Success(c, "获取角色信息成功", 0, role)
 }
 
-func (con RoleController) Edit(c *gin.Context) {
+func (con RoleController) EditLocal(c *gin.Context) {
 	id := c.PostForm("id")
 	title := c.PostForm("title")
 	description := c.PostForm("description")
@@ -80,7 +84,7 @@ func (con RoleController) Edit(c *gin.Context) {
 	con.Success(c, "修改角色信息成功", 0, nil)
 }
 
-func (con RoleController) Delete(c *gin.Context) {
+func (con RoleController) DeleteLocal(c *gin.Context) {
 	id := uint(logic.StringToInt(c.PostForm("id")))
 	role := models.Role{}
 	role.ID = id
@@ -101,6 +105,114 @@ func (con RoleController) Delete(c *gin.Context) {
 		return
 	}
 	con.Success(c, "删除角色成功", 0, nil)
+}
+
+// 调用role微服务
+var (
+	service = "role"
+	version = "latest"
+)
+
+func (con RoleController) GetRoleList(c *gin.Context) { //后期按需求改成分页查询
+	// Create client
+	roleClient := rolePb.NewRoleService(service, logic.RoleMicroClient)
+
+	// Call service
+	res, err := roleClient.GetRoleList(context.Background(), &rolePb.GetRoleListRequest{})
+	if err != nil {
+		con.Error(c, res.GetMessage(), int(res.GetStatus()), nil)
+		return
+	}
+
+	var roleList []models.Role
+	temp := res.GetRoleList()
+	for _, v := range temp {
+		roleList = append(roleList, models.Role{
+			Title:       v.GetTitle(),
+			Description: v.GetDescription(),
+			Status:      int(v.GetStatus()),
+		})
+	}
+
+	con.Success(c, res.GetMessage(), int(res.GetStatus()), roleList) // 得到的role列表可行吗？应该是要转一下
+}
+
+func (con RoleController) Add(c *gin.Context) { //添加角色
+	title := strings.Trim(c.PostForm("title"), " ")             //角色名称  (去除输入字符串中的空格)
+	description := strings.Trim(c.PostForm("description"), " ") //角色描述
+
+	// Create client
+	roleClient := rolePb.NewRoleService(service, logic.RoleMicroClient)
+
+	// Call service
+	res, err := roleClient.AddRole(context.Background(), &rolePb.AddRoleRequest{
+		Title:       title,
+		Description: description,
+	})
+	if err != nil {
+		con.Error(c, res.GetMessage(), int(res.GetStatus()), nil)
+		return
+	}
+	con.Success(c, res.GetMessage(), int(res.GetStatus()), nil)
+}
+
+func (con RoleController) GetRoleInfo(c *gin.Context) {
+	//获取需要修改的角色id           //首先把角色信息传到对应的表单框中
+	id := c.Query("id")
+	// Create client
+	roleClient := rolePb.NewRoleService(service, logic.RoleMicroClient)
+
+	// Call service
+	res, err := roleClient.GetRoleInfo(context.Background(), &rolePb.GetRoleInfoRequest{
+		Id: int32(logic.StringToInt(id)),
+	})
+	if err != nil {
+		con.Error(c, res.GetMessage(), int(res.GetStatus()), nil)
+		return
+	}
+	role := models.Role{
+		Title:       res.GetRoleInfo().GetTitle(),
+		Description: res.GetRoleInfo().Description,
+		Status:      int(res.GetRoleInfo().GetStatus()),
+	}
+	con.Success(c, res.GetMessage(), int(res.GetStatus()), role)
+}
+
+func (con RoleController) Edit(c *gin.Context) {
+	id := c.PostForm("id")
+	title := c.PostForm("title")
+	description := c.PostForm("description")
+	// Create client
+	roleClient := rolePb.NewRoleService(service, logic.RoleMicroClient)
+
+	// Call service
+	res, err := roleClient.EditRole(context.Background(), &rolePb.EditRoleRequest{
+		Id:          int32(logic.StringToInt(id)),
+		Title:       title,
+		Description: description,
+	})
+	if err != nil {
+		con.Error(c, res.GetMessage(), int(res.GetStatus()), nil)
+		return
+	}
+	con.Success(c, res.GetMessage(), int(res.GetStatus()), nil)
+}
+
+func (con RoleController) Delete(c *gin.Context) {
+	id := logic.StringToInt(c.PostForm("id"))
+	// Create client
+	roleClient := rolePb.NewRoleService(service, logic.RoleMicroClient)
+
+	// Call service
+	res, err := roleClient.DeleteRole(context.Background(), &rolePb.DeleteRoleRequest{ //如果产生了err，那么res传不过来
+		Id: int32(id),
+	})
+	if err != nil {
+		// fmt.Println(err, res)  // 此角色不存在 <nil>
+		con.Error(c, res.GetMessage(), int(res.GetStatus()), nil)
+		return
+	}
+	con.Success(c, res.GetMessage(), int(res.GetStatus()), nil)
 }
 
 func (con RoleController) GetAuthInfo(c *gin.Context) {
